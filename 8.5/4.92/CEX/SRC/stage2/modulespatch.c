@@ -24,6 +24,8 @@
 #include "mappath.h"
 #include "ps3mapi_core.h"
 
+#include "qcfw.h"
+
 #define MAX_VSH_PLUGINS 			7
 #define BOOT_PLUGINS_FILE			"/dev_usb000/boot_plugins.txt"
 #define BOOT_PLUGINS_FILE2			"/dev_hdd0/boot_plugins.txt"
@@ -347,6 +349,37 @@ SprxPatch libfs_external_patches[] =
 	{ 0 }
 };
 
+// qCFW
+
+SprxPatch nas_plugin_patches[] =
+{
+	{patch1_nas,NOP, &condition_true},
+	{patch2_nas,NOP, &condition_true},
+	{patch3_nas,0x48000044 , &condition_true},	// Install All Packages
+	{0}
+};
+
+SprxPatch download_plugin_patches[] =
+{
+	{elf_patch1_download,0x409C017C , &condition_true},
+	{elf_patch2_download,0x48000010 , &condition_true},
+	// Devil303's extended download plugin patches
+	{elf_patch3_download,0x78000000 , &condition_true},
+	{elf_patch3_download+0x9A,0x78000000 , &condition_true},		// allow XML files to be downloaded
+	{elf_patch4_download,0x78787800 , &condition_true},
+	/*{elf_patch5_download,0 , &condition_true},
+	{elf_patch5_download+8,0 , &condition_true},
+	{elf_patch5_download+0x0C,0 , &condition_true},
+	{elf_patch5_download+0x10,0 , &condition_true},*/
+	{elf_patch6_download,0x6F637465 , &condition_true},
+	{elf_patch6_download+4,0x742D7374 , &condition_true},
+	{elf_patch6_download+8,0x7265616D , &condition_true},
+	{elf_patch6_download+0x48,0x6F637465 , &condition_true},
+	{elf_patch6_download+0x4C,0x742D7374 , &condition_true},
+	{elf_patch6_download+0x50,0x7265616D , &condition_true},
+	{0}
+};
+
 PatchTableEntry patch_table[] =
 {
 	{ VSH_HASH, main_vsh_patches },
@@ -364,6 +397,10 @@ PatchTableEntry patch_table[] =
 	{ EXPLORE_CATEGORY_PSN_HASH, explore_category_psn_patches },
 	{ NP_TROPHY_PLUGIN_HASH, np_trophy_plugin_patches },
 	{ NP_TROPHY_INGAME_HASH, np_trophy_ingame_patches },
+
+	// qCFW
+	{ NAS_PLUGIN_HASH, nas_plugin_patches },
+	{ DOWNLOAD_PLUGIN_HASH, download_plugin_patches },
 };
 
 #define N_PATCH_TABLE_ENTRIES	(sizeof(patch_table) / sizeof(PatchTableEntry))
@@ -444,6 +481,7 @@ LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (uint64_t *spu_obj,
 		//DPRINTF("caller_process = %08X\n", caller_process);
 	}
 
+	qcfw_post_hvcall_99(spu_obj, spu_args);
 	return SUCCEEDED;
 }
 
@@ -580,7 +618,7 @@ LV2_PATCHED_FUNCTION(int, modules_patching, (uint64_t *arg1, uint32_t *arg2))
 
 		total = 0;
 		
-		//DPRINTF("hash = %lx\n", hash);
+		DPRINTF("hash = %lx\n", hash);
 		
 		switch(hash)
 		{
@@ -705,7 +743,10 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, load_process_hooked, (process_t proce
 	if (!vsh_process)
 	{
 		if (strcmp(path, "/dev_flash/vsh/module/vsh.self") == 0)		
+		{
 			vsh_process = process;		
+			qcfw_patch_vsh(vsh_process);
+		}
 		else if (strcmp(path, "emer_init.self") == 0)
 		{
 			//DPRINTF("COBRA: Safe mode detected\n");

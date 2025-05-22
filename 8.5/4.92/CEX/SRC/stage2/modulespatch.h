@@ -8,8 +8,8 @@
 
 #define VSH_HASH						0xb6b6d000002e0000
 #define BDP_DISC_CHECK_PLUGIN_HASH		0x9940000000003000
-#define EXPLORE_PLUGIN_HASH				0xc50d0000000e0000
-#define EXPLORE_CATEGORY_GAME_HASH		0xde52d00000050000
+//#define EXPLORE_PLUGIN_HASH				0xc50d0000000e0000
+//#define EXPLORE_CATEGORY_GAME_HASH		0xde52d00000050000
 #define PS1_EMU_HASH					0xcc28400000090000
 #define PS1_NETEMU_HASH 				0xcc284000000b0000
 #define GAME_EXT_PLUGIN_HASH			0xcc26800000010000
@@ -124,6 +124,30 @@
 
 /* libfs */
 #define aio_copy_root_offset			0xD658
+
+// qCFW 4.92 CEX
+
+#define NAS_PLUGIN_HASH					0xc50d000000020000
+
+#define patch1_nas						0x2eae4
+#define patch2_nas						0x2ec48
+#define patch3_nas						0x1F75C // Install ALL pkgs
+
+#define DOWNLOAD_PLUGIN_HASH			0xcc26800000020000
+
+/* download_plugin */
+#define elf_patch1_download				0x42e2c
+#define elf_patch2_download				0x42e34
+/// advanced download patches found by Devil303
+#define elf_patch3_download				0x4D708
+#define elf_patch4_download				0x4E528
+#define elf_patch5_download				0x4E548
+#define elf_patch6_download				0x4E624
+
+// qCFW 4.84 DEX
+
+#define EXPLORE_PLUGIN_HASH				0xc50d0000000e0000
+#define EXPLORE_CATEGORY_GAME_HASH		0xde52c00000050000
 
 #endif /* FIRMWARE */
 

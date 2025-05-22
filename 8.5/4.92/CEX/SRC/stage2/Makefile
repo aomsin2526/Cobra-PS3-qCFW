@@ -53,6 +53,8 @@ ifeq ($(BUILD_TYPE), ps2_debug)
 OBJS += ../debug/src/debug.o ../debug/src/printf.o ../debug/src/debug_util.o
 endif
 
+OBJS += qcfw.o
+
 all: $(OUTPUT)
 	@cp -r $(OUTPUT) ../../BIN
 	@rm -f *.o *.elf *.map *.lzma ../lv2/src/*.o ../lv1/src/*.o ../debug/src/*.o
