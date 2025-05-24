@@ -46,6 +46,14 @@ void main(void)
 		}
 	}*/
 
+	// qCFW usb boot
+	{
+		cellFsUtilMount_Usb000();
+
+		if(cellFsStat(STAGE2_USB0_FILE, &stat) == 0)
+			stage2_file = (char *)STAGE2_USB0_FILE;
+	}
+
 	// Load stage2
 	if(cellFsStat(stage2_file, &stat) == 0)
 	{
@@ -78,8 +86,8 @@ void main(void)
 		{
 			// stage2 fail save by bguerville / AV
 			// Disabling to avoid semibrick on NAND, will be enabled in stage2
-			cellFsUtilMount_h("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_blind", 0, 0, 0, 0, 0);
-			cellFsRename(STAGE2_DEVBLIND, STAGE2_DEVBLIND ".bak");
+			//cellFsUtilMount_h("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_blind", 0, 0, 0, 0, 0);
+			//cellFsRename(STAGE2_DEVBLIND, STAGE2_DEVBLIND ".bak");
 		}
 
 		f.addr = stage2;	

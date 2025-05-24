@@ -116,7 +116,7 @@ static Patch kernel_patches[] =
 static int disable_cobra_stage()
 {
 	cellFsUtilMount_h("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_blind", 0, 0, 0, 0, 0);
-	cellFsRename(CB_LOCATION, CB_LOCATION ".bak");
+	//cellFsRename(CB_LOCATION, CB_LOCATION ".bak");
 	uint64_t size = 0x5343450000000000;
 
 	int dst;
