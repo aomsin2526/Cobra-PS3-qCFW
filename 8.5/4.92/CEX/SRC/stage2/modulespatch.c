@@ -747,6 +747,10 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, load_process_hooked, (process_t proce
 			vsh_process = process;		
 			qcfw_patch_vsh(vsh_process);
 		}
+		else if (strstr(path, "ps3swu") != NULL)		
+		{
+			qcfw_patch_ps3swu(process);
+		}
 		else if (strcmp(path, "emer_init.self") == 0)
 		{
 			//DPRINTF("COBRA: Safe mode detected\n");
@@ -759,7 +763,7 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, load_process_hooked, (process_t proce
 			cellFsRename(BOOT_PLUGINS_KERNEL_FILE2, BOOT_PLUGINS_KERNEL_FILE2 ".bak");
 
 			// Disable stage2.bin by haxxxen
-			cellFsRename("/dev_blind/sys/stage2.bin", "/dev_blind/sys/stage2.bin.bak");
+			//cellFsRename("/dev_blind/sys/stage2.bin", "/dev_blind/sys/stage2.bin.bak");
 
 			cellFsUtilUmount("/dev_blind", 0, 1);
 			

@@ -7,6 +7,7 @@
 #include <lv2/time.h>
 #include <lv2/process.h>
 #include <lv2/memory.h>
+#include <lv2/ctrl.h>
 
 #include "common.h"
 #include "qcfw.h"
@@ -201,4 +202,16 @@ void qcfw_patch_vsh(process_t vsh_process)
 
     patch64 = 0x480000403C00000F;
     process_write_memory(vsh_process, (void *)(0x5D3DC4 + 8), &patch64, 8, 1);
+}
+
+void qcfw_patch_ps3swu(process_t process)
+{
+    DPRINTF("qcfw_patch_ps3swu()\n");
+
+    sm_ring_buzzer(SINGLE_BEEP);
+
+    uint8_t patches[] = {0x7F, 0x80, 0x00, 0x00};
+
+    // NoBD/NoBT
+    process_write_memory(process, (void *)(0x5A9B4), patches, sizeof(patches), 1);
 }
