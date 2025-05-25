@@ -116,13 +116,34 @@ void qcfw_post_hvcall_99(uint64_t *spu_obj, uint64_t *spu_args)
     struct SceProgramIdentHeader_s *sceProgramIdentHeader = (struct SceProgramIdentHeader_s *)(self_header_addr + 0x70);
     uint8_t isNpdrm = (sceProgramIdentHeader->program_type == 8) ? 1 : 0;
 
+    DPRINTF("sceHeader->attribute = 0x%x\n", (uint32_t)sceHeader->attribute);
+
+    DPRINTF("sceProgramIdentHeader->program_type = 0x%x\n", (uint32_t)sceProgramIdentHeader->program_type);
+    DPRINTF("sceProgramIdentHeader->program_authority_id = 0x%lx\n", sceProgramIdentHeader->program_authority_id);
+
+    uint8_t isCustomVshModules = ((sceProgramIdentHeader->program_authority_id == 0x1070000052000001) && (sceHeader->attribute < 0x1C)) ? 1 : 0;
+
+    uint8_t doWait = 0;
+
     if (!isNpdrm)
-    {
         DPRINTF("Not npdrm\n");
-        return;
+    else
+    {
+        DPRINTF("npdrm detected!\n");
+        doWait = 1;
     }
 
-    DPRINTF("npdrm detected!\n");
+    if (!isCustomVshModules)
+        DPRINTF("Not custom vsh modules\n");
+    else
+    {
+        DPRINTF("Custom vsh modules detected!\n");
+        doWait = 1;
+    }
+
+    if (!doWait)
+        return;
+
     timer_usleep(MILISECONDS(1200)); // weird hang fix
 }
 
