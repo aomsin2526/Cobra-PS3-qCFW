@@ -1,3 +1,6 @@
+#include <lv1/lv1.h>
+#include <lv1/lv1call.h>
+
 #include <lv2/lv2.h>
 #include <lv2/libc.h>
 #include <lv2/security.h>
@@ -161,8 +164,30 @@ void do_patch32(uint64_t addr, uint32_t patch)
 
 void qcfw_init()
 {
+    DPRINTF("qcfw_init()\n");
+
     // 4.92 CEX
     do_patch32(MKA(0x59dc4), 0x38600000);
+
+    // spoof ps2 bc flags
+    {
+        DPRINTF("Spoofing ps2 bc flags\n");
+
+        int32_t res = 99;
+
+        uint8_t config[8];
+        uint64_t v2;
+
+        res = lv1_get_repository_node_value(PS3_LPAR_ID_PME, FIELD_FIRST("sys", 0), FIELD("hw", 0), FIELD("config", 0), 0, (uint64_t *)config, &v2);
+        DPRINTF("res = 0x%x\n", res);
+
+        DPRINTF("old sys.hw.config = 0x%lx\n", *(uint64_t*)config);
+        config[6] |= 1;
+        DPRINTF("new sys.hw.config = 0x%lx\n", *(uint64_t*)config);
+
+        res = lv1_modify_repository_node_value(PS3_LPAR_ID_PME, FIELD_FIRST("sys", 0), FIELD("hw", 0), FIELD("config", 0), 0, *(uint64_t*)config, v2);
+        DPRINTF("res = 0x%x\n", res);
+    }
 }
 
 void qcfw_patch_vsh(process_t vsh_process)

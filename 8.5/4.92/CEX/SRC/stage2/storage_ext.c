@@ -2697,15 +2697,15 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, post_cellFsUtilMount, (const char *bl
 
 static INLINE int get_ps2emu_type(void)
 {
-	uint8_t config[8];
-	u64 v2;
+	//uint8_t config[8];
+	//u64 v2;
 
-	lv1_get_repository_node_value(PS3_LPAR_ID_PME, FIELD_FIRST("sys", 0), FIELD("hw", 0), FIELD("config", 0), 0, (u64 *)config, &v2);
+	//lv1_get_repository_node_value(PS3_LPAR_ID_PME, FIELD_FIRST("sys", 0), FIELD("hw", 0), FIELD("config", 0), 0, (u64 *)config, &v2);
 
-	if (config[6] & 1) // has emotion engine
-		return PS2EMU_HW;
-	else if (config[0] & 0x20) // has graphics synthesizer
-		return PS2EMU_GX;
+	//if (config[6] & 1) // has emotion engine
+	//	return PS2EMU_HW;
+	//else if (config[0] & 0x20) // has graphics synthesizer
+	//	return PS2EMU_GX;
 
 	return PS2EMU_SW;
 }
