@@ -144,6 +144,11 @@ SprxPatch explore_plugin_patches[] =
 	{ trophy_title_xmb_patch, 0x4800005c, &hidden_trophy_mode },
 	{ trophy_details_xmb_patch, LI(9, 1), &hidden_trophy_mode },
 	{ trophy_icon_xmb_patch, LI(3, 1), &hidden_trophy_mode },
+
+	// qCFW install packages
+	{ 0x1FD258, 0x38600001, &condition_true },
+	{ 0x1FD258 + 4, 0x4e800020, &condition_true },
+
 	{ 0 }
 };
 
