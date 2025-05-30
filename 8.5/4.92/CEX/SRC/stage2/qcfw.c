@@ -126,6 +126,8 @@ void qcfw_post_hvcall_99(uint64_t *spu_obj, uint64_t *spu_args)
 
     uint8_t isCustomVshModules = ((sceProgramIdentHeader->program_authority_id == 0x1070000052000001) && (sceHeader->attribute < 0x1C)) ? 1 : 0;
 
+    uint8_t isRetailNonNpdrm = ((sceProgramIdentHeader->program_authority_id == 0x1010000001000003) && (sceProgramIdentHeader->program_type == 4)) ? 1 : 0;
+
     uint8_t doWait = 0;
 
     if (!isNpdrm)
@@ -141,6 +143,14 @@ void qcfw_post_hvcall_99(uint64_t *spu_obj, uint64_t *spu_args)
     else
     {
         DPRINTF("Custom vsh modules detected!\n");
+        doWait = 1;
+    }
+
+    if (!isRetailNonNpdrm)
+        DPRINTF("Not isRetailNonNpdrm\n");
+    else
+    {
+        DPRINTF("isRetailNonNpdrm detected!\n");
         doWait = 1;
     }
 
