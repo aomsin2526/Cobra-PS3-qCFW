@@ -258,6 +258,11 @@ void qcfw_patch_vsh(process_t vsh_process)
 
     patch64 = 0x480000403C00000F;
     process_write_memory(vsh_process, (void *)(0x5D3DC4 + 8), &patch64, 8, 1);
+
+    // psn firmware version check bypass
+
+    patch32 = 0x38000082;
+    process_write_memory(vsh_process, (void *)(0x2455EC), &patch32, 4, 1);
 }
 
 void qcfw_patch_ps3swu(process_t process)
