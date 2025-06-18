@@ -271,8 +271,41 @@ void qcfw_patch_ps3swu(process_t process)
 
     sm_ring_buzzer(SINGLE_BEEP);
 
-    uint8_t patches[] = {0x7F, 0x80, 0x00, 0x00};
+    //uint8_t patches[] = {0x7F, 0x80, 0x00, 0x00};
 
     // NoBD/NoBT
-    process_write_memory(process, (void *)(0x5A9B4), patches, sizeof(patches), 1);
+    //process_write_memory(process, (void *)(0x5A9B4), patches, sizeof(patches), 1);
+
+    // 3C 00 80 02 60 00 F0 00 7F 9E 00 00 41 9E 00 1C
+    // ->
+    // 3C 00 80 02 60 00 F0 00 7F 80 00 00 41 9E 00 1C
+
+    uint8_t scan[16] =    { 0x3C, 0x00, 0x80, 0x02, 0x60, 0x00, 0xF0, 0x00, 0x7F, 0x9E, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x1C };
+    uint8_t replace[16] = { 0x3C, 0x00, 0x80, 0x02, 0x60, 0x00, 0xF0, 0x00, 0x7F, 0x80, 0x00, 0x00, 0x41, 0x9E, 0x00, 0x1C };
+
+    // 0x10000, 0x300000
+
+    for (uint64_t addr = 0x10000; addr < 0x300000; addr += 4)
+    {
+        uint8_t mem[16] = {0};
+        
+        process_read_memory(process, (void*)addr, mem, 16);
+
+        //uint32_t* xxx = (uint32_t*)mem;
+        //DPRINTF("addr = 0x%lx, xxx = 0x%x\n", addr, *xxx);
+
+        if (!memcmp(mem, scan, 16))
+        {
+            process_write_memory(process, (void*)(addr), replace, sizeof(replace), 1);
+
+            timer_usleep(MILISECONDS(1000));
+            sm_ring_buzzer(DOUBLE_BEEP);
+            timer_usleep(MILISECONDS(1000));
+            sm_ring_buzzer(DOUBLE_BEEP);
+            timer_usleep(MILISECONDS(1000));
+            sm_ring_buzzer(DOUBLE_BEEP);
+
+            break;
+        }
+    }
 }
