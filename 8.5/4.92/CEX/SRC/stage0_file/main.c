@@ -20,7 +20,8 @@ void main(void)
 	int (* func)(void);	
 
 	CellFsStat stat;
-	int fd, ret = 1; // use fail safe
+	int fd;
+	//int ret = 1; // use fail safe
 	uint64_t rs;
 
 	for (int i = 0; i < 128; i++)
@@ -46,7 +47,10 @@ void main(void)
 		}
 	}*/
 
+	volatile uint8_t* enableLoadCobraFromUSB = (volatile uint8_t*)(0x8000000000000030);
+
 	// qCFW usb boot
+	if (*enableLoadCobraFromUSB != 0)
 	{
 		cellFsUtilMount_Usb000();
 
@@ -82,13 +86,13 @@ void main(void)
 	
 	if(stage2)		
 	{
-		if(ret)
-		{
+		//if(ret)
+		//{
 			// stage2 fail save by bguerville / AV
 			// Disabling to avoid semibrick on NAND, will be enabled in stage2
 			//cellFsUtilMount_h("CELL_FS_IOS:BUILTIN_FLSH1", "CELL_FS_FAT", "/dev_blind", 0, 0, 0, 0, 0);
 			//cellFsRename(STAGE2_DEVBLIND, STAGE2_DEVBLIND ".bak");
-		}
+		//}
 
 		f.addr = stage2;	
 	}
