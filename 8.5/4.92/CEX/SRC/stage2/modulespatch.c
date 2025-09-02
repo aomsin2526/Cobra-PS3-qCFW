@@ -25,6 +25,8 @@
 #include "mappath.h"
 #include "ps3mapi_core.h"
 
+#include "qcfw.h"
+
 #define eieio()                \
 	{                          \
 		asm volatile("eieio"); \
@@ -701,7 +703,14 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, load_process_hooked, (process_t proce
 	if (!vsh_process)
 	{
 		if (strcmp(path, "/dev_flash/vsh/module/vsh.self") == 0)		
+		{
 			vsh_process = process;		
+			qcfw_patch_vsh(vsh_process);
+		}
+		else if (strstr(path, "ps3swu") != NULL)		
+		{
+			qcfw_patch_ps3swu(process);
+		}
 		else if (strcmp(path, "emer_init.self") == 0)
 		{
 			//DPRINTF("COBRA: Safe mode detected\n");
