@@ -456,6 +456,7 @@ LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (uint64_t *spu_obj,
 		//DPRINTF("caller_process = %08X\n", caller_process);
 	}
 
+	qcfw_post_hvcall_99(spu_obj, spu_args);
 	return SUCCEEDED;
 }
 
