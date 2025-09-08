@@ -278,6 +278,18 @@ LV2_HOOKED_FUNCTION_PRECALL_2(int32_t, post_send_and_receive_with_auth_id, (uint
     return 0;
 }
 
+void do_patch(uint64_t addr, uint64_t patch)
+{
+    *(uint64_t *)addr = patch;
+    clear_icache((void *)addr, 8);
+}
+
+void do_patch32(uint64_t addr, uint32_t patch)
+{
+    *(uint32_t *)addr = patch;
+    clear_icache((void *)addr, 4);
+}
+
 void qcfw_init()
 {
     DPRINTF("qcfw_init()\n");
@@ -288,6 +300,9 @@ void qcfw_init()
         DPRINTF("qcfw_is_loadusb\n");
 
     hook_function_with_precall(0x212F7C, post_send_and_receive_with_auth_id, 2);
+
+    // ecdsa
+    do_patch32(MKA(0x59dc4), 0x38600000);
 
     // spoof ps2 bc flags
     {
