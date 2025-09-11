@@ -243,7 +243,7 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 		strcpy(ntfs_iso_path, path0);
 	
 #if defined(FIRMWARE_DEX)
-	if (strstr(path0, ":\\")) // qcfw tm fix 0x80010006
+	if (strstr(path0, ":\\") || strstr(path0, "/app_home/") || strstr(path0, "~/")) // qcfw tm fix 0x80010006
 	{
 		avoid_recursive_calls = 0;
 		return;

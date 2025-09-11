@@ -2706,6 +2706,8 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, post_cellFsUtilMount, (const char *bl
 
 static INLINE int get_ps2emu_type(void)
 {
+#if 0
+
 	uint8_t config[8];
 	u64 v2;
 
@@ -2715,6 +2717,8 @@ static INLINE int get_ps2emu_type(void)
 		return PS2EMU_HW;
 	else if (config[0] & 0x20) // has graphics synthesizer
 		return PS2EMU_GX;
+
+#endif
 
 	return PS2EMU_SW;
 }
