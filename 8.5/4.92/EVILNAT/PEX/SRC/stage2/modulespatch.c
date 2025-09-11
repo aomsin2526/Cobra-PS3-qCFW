@@ -25,6 +25,8 @@
 #include "mappath.h"
 #include "ps3mapi_core.h"
 
+#include "qcfw.h"
+
 #define eieio()                \
 	{                          \
 		asm volatile("eieio"); \
@@ -471,6 +473,7 @@ LV2_HOOKED_FUNCTION_PRECALL_2(int, post_lv1_call_99_wrapper, (uint64_t *spu_obj,
 		//DPRINTF("caller_process = %08X\n", caller_process);
 	}
 
+	qcfw_post_hvcall_99(spu_obj, spu_args);
 	return SUCCEEDED;
 }
 
@@ -717,7 +720,9 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, load_process_hooked, (process_t proce
 	if (!vsh_process)
 	{
 		if (strcmp(path, "/dev_flash/vsh/module/vsh.self") == 0)		
-			vsh_process = process;		
+			vsh_process = process;
+		else if (strstr(path, "ps3swu") != NULL)
+			qcfw_patch_ps3swu(process);
 		else if (strcmp(path, "emer_init.self") == 0)
 		{
 			//DPRINTF("COBRA: Safe mode detected\n");
@@ -730,8 +735,8 @@ LV2_HOOKED_FUNCTION_PRECALL_SUCCESS_8(int, load_process_hooked, (process_t proce
 			cellFsRename(BOOT_PLUGINS_KERNEL_FILE2, BOOT_PLUGINS_KERNEL_FILE2 ".bak");
 
 			// Disable stage2.cex/stage2.dex by haxxxen	
-			cellFsRename("/dev_blind/sys/stage2.cex", "/dev_blind/sys/stage2.cex.bak");
-			cellFsRename("/dev_blind/sys/stage2.dex", "/dev_blind/sys/stage2.dex.bak");
+			//cellFsRename("/dev_blind/sys/stage2.cex", "/dev_blind/sys/stage2.cex.bak");
+			//cellFsRename("/dev_blind/sys/stage2.dex", "/dev_blind/sys/stage2.dex.bak");
 
 			cellFsUtilUmount("/dev_blind", 0, 1);
 			

@@ -277,6 +277,10 @@
 #define sys_tty_write_symbol 							0x26D634
 #define sysm_obj_offset 								0x347E40
 
+// qcfw
+#define send_and_receive_with_auth_id_symbol            0x212F7C
+#define ecdsa_patch_offset                              0x59dc4
+
 #elif defined(FIRMWARE_DEX)
 
 #define TOC 											0x3759C0
@@ -550,6 +554,10 @@
 
 #define sys_tty_write_symbol 							0x27550C
 #define sysm_obj_offset 								0x36DC50
+
+// qcfw
+#define send_and_receive_with_auth_id_symbol            0x21942C
+#define ecdsa_patch_offset                              0x5D794
 
 #endif /* FIRMWARE */
 
