@@ -99,14 +99,14 @@ void qcfw_post_hvcall_99(uint64_t *spu_obj, uint64_t *spu_args)
     if (!qcfw_is_loadusb)
         return;
 
-    DPRINTF("qcfw_post_hvcall_99()\n");
+    //DPRINTF("qcfw_post_hvcall_99()\n");
 
     struct qcfw_appldr_subargs_s *subargs = (struct qcfw_appldr_subargs_s *)spu_args;
     //qcfw_print_appldr_subargs(subargs);
 
     if (subargs->program_auth_id == 0)
     {
-        DPRINTF("program_auth_id must not 0\n");
+        //DPRINTF("program_auth_id must not 0\n");
         return;
     }
 
@@ -116,23 +116,23 @@ void qcfw_post_hvcall_99(uint64_t *spu_obj, uint64_t *spu_args)
 
     if (sceHeader->magic != 0x53434500)
     {
-        DPRINTF("magic check failed!\n");
+        //DPRINTF("magic check failed!\n");
         return;
     }
 
     if (sceHeader->category != 1)
     {
-        DPRINTF("Not self/sprx\n");
+        //DPRINTF("Not self/sprx\n");
         return;
     }
 
     struct SceProgramIdentHeader_s *sceProgramIdentHeader = (struct SceProgramIdentHeader_s *)(self_header_addr + 0x70);
     uint8_t isNpdrm = (sceProgramIdentHeader->program_type == 8) ? 1 : 0;
 
-    DPRINTF("sceHeader->attribute = 0x%x\n", (uint32_t)sceHeader->attribute);
+    //DPRINTF("sceHeader->attribute = 0x%x\n", (uint32_t)sceHeader->attribute);
 
-    DPRINTF("sceProgramIdentHeader->program_type = 0x%x\n", (uint32_t)sceProgramIdentHeader->program_type);
-    DPRINTF("sceProgramIdentHeader->program_authority_id = 0x%lx\n", sceProgramIdentHeader->program_authority_id);
+    //DPRINTF("sceProgramIdentHeader->program_type = 0x%x\n", (uint32_t)sceProgramIdentHeader->program_type);
+    //DPRINTF("sceProgramIdentHeader->program_authority_id = 0x%lx\n", sceProgramIdentHeader->program_authority_id);
 
     uint8_t isCustomVshModules = ((sceProgramIdentHeader->program_authority_id == 0x1070000052000001) && (sceHeader->attribute < 0x1C)) ? 1 : 0;
 
@@ -141,26 +141,32 @@ void qcfw_post_hvcall_99(uint64_t *spu_obj, uint64_t *spu_args)
     uint8_t doWait = 0;
 
     if (!isNpdrm)
-        DPRINTF("Not npdrm\n");
+    {
+        //DPRINTF("Not npdrm\n");
+    }
     else
     {
-        DPRINTF("npdrm detected!\n");
+        //DPRINTF("npdrm detected!\n");
         doWait = 1;
     }
 
     if (!isCustomVshModules)
-        DPRINTF("Not custom vsh modules\n");
+    {
+        //DPRINTF("Not custom vsh modules\n");
+    }
     else
     {
-        DPRINTF("Custom vsh modules detected!\n");
+        //DPRINTF("Custom vsh modules detected!\n");
         doWait = 1;
     }
 
     if (!isRetailNonNpdrm)
-        DPRINTF("Not isRetailNonNpdrm\n");
+    {
+        //DPRINTF("Not isRetailNonNpdrm\n");
+    }
     else
     {
-        DPRINTF("isRetailNonNpdrm detected!\n");
+        //DPRINTF("isRetailNonNpdrm detected!\n");
         doWait = 1;
     }
 
@@ -213,24 +219,20 @@ void qcfw_patch_ps3swu(process_t process)
     }
 }
 
-mutex_t post_send_and_receive_with_auth_id_mutex;
-uint8_t post_send_and_receive_with_auth_id_recursive = 0;
+f_desc_t orig_send_and_receive_with_auth_id;
 
-LV2_HOOKED_FUNCTION_PRECALL_2(int32_t, post_send_and_receive_with_auth_id, (uint32_t* a1, uint64_t a2))
+LV2_HOOKED_FUNCTION(int32_t, my_send_and_receive_with_auth_id, (uint32_t* a1, uint64_t a2))
 {
-    mutex_lock(post_send_and_receive_with_auth_id_mutex, 0);
-    ++post_send_and_receive_with_auth_id_recursive;
+    void (*func)() = (void*)&orig_send_and_receive_with_auth_id;
 
-    if (post_send_and_receive_with_auth_id_recursive <= 4)
+    for (uint32_t i = 0; i < 16; ++i)
     {
-        if (a1[6] == 0xf)
-        {
-            call_hooked_function_2(post_send_and_receive_with_auth_id, (uint64_t)a1, (uint64_t)a2);
-        }
+        func(a1, a2);
+
+        if (a1[6] != 0xf)
+            break;
     }
 
-    --post_send_and_receive_with_auth_id_recursive;
-    mutex_unlock(post_send_and_receive_with_auth_id_mutex);
     return 0;
 }
 
@@ -258,8 +260,7 @@ void qcfw_init()
         sm_ring_buzzer(TRIPLE_BEEP);
     }
 
-    mutex_create(&post_send_and_receive_with_auth_id_mutex, SYNC_PRIORITY, SYNC_RECURSIVE);
-    hook_function_with_precall(send_and_receive_with_auth_id_symbol, post_send_and_receive_with_auth_id, 2);
+    hook_function(send_and_receive_with_auth_id_symbol, my_send_and_receive_with_auth_id, &orig_send_and_receive_with_auth_id);
 
     // ecdsa
     do_patch32(MKA(ecdsa_patch_offset), 0x38600000);
