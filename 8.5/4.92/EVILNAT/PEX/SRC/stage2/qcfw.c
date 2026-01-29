@@ -219,10 +219,12 @@ void qcfw_patch_ps3swu(process_t process)
     }
 }
 
+mutex_t my_send_and_receive_with_auth_id_mutex;
 f_desc_t orig_send_and_receive_with_auth_id;
 
 LV2_HOOKED_FUNCTION(int32_t, my_send_and_receive_with_auth_id, (uint32_t* a1, uint64_t a2))
 {
+    mutex_lock(my_send_and_receive_with_auth_id_mutex, 0);
     void (*func)() = (void*)&orig_send_and_receive_with_auth_id;
 
     for (uint32_t i = 0; i < 16; ++i)
@@ -233,6 +235,7 @@ LV2_HOOKED_FUNCTION(int32_t, my_send_and_receive_with_auth_id, (uint32_t* a1, ui
             break;
     }
 
+    mutex_unlock(my_send_and_receive_with_auth_id_mutex);
     return 0;
 }
 
@@ -260,6 +263,7 @@ void qcfw_init()
         sm_ring_buzzer(TRIPLE_BEEP);
     }
 
+    mutex_create(&my_send_and_receive_with_auth_id_mutex, SYNC_PRIORITY, SYNC_RECURSIVE);
     hook_function(send_and_receive_with_auth_id_symbol, my_send_and_receive_with_auth_id, &orig_send_and_receive_with_auth_id);
 
     // ecdsa
