@@ -219,23 +219,112 @@ void qcfw_patch_ps3swu(process_t process)
     }
 }
 
-mutex_t my_send_and_receive_with_auth_id_mutex;
 f_desc_t orig_send_and_receive_with_auth_id;
+
+uint32_t qcfw_last_success_get_time_value = 0x311407a6;
 
 LV2_HOOKED_FUNCTION(int32_t, my_send_and_receive_with_auth_id, (uint32_t* a1, uint64_t a2))
 {
-    mutex_lock(my_send_and_receive_with_auth_id_mutex, 0);
+    // FAILED: 0
+    // a1[0] = 0x80000000
+    // a1[1] = 0x362120
+    // a1[2] = 0x0
+    // a1[3] = 0x3002
+    // a1[4] = 0x0
+    // a1[5] = 0x3000
+    // a1[6] = 0xf
+    // a1[7] = 0x0
+    // a1[8] = 0x0
+    // a1[9] = 0x0
+    // a1[10] = 0x10700005
+    // a1[11] = 0xff000001
+    // a1[12] = 0x10000
+    // a1[13] = 0xd01d5da0
+    // a1[14] = 0x0
+    // a1[15] = 0x0
+    // a1[16] = 0x0
+    // a1[17] = 0x0
+    // a1[18] = 0x0
+    // a1[19] = 0x0
+    // a1[20] = 0x0
+    // a1[21] = 0x0
+    // a1[22] = 0x0
+    // a1[23] = 0x70463210
+
+    // Get rtc success:
+    // a1[0] = 0x80000000
+    // a1[1] = 0x362120
+    // a1[2] = 0x0
+    // a1[3] = 0x3002
+    // a1[4] = 0x0
+    // a1[5] = 0x3000
+    // a1[6] = 0x0
+    // a1[7] = 0x0
+    // a1[8] = 0x0
+    // a1[9] = 0x0
+    // a1[10] = 0x10700005
+    // a1[11] = 0xff000001
+    // a1[12] = 0x10000
+    // a1[13] = 0x0
+    // a1[14] = 0x0
+    // a1[15] = 0x0
+    // a1[16] = 0x0
+    // a1[17] = 0x311407a6, this is time
+    // a1[18] = 0x0
+    // a1[19] = 0x0
+    // a1[20] = 0x0
+    // a1[21] = 0x0
+    // a1[22] = 0x0
+    // a1[23] = 0xc9a5c0
+    // a2 = 0x10700005ff000001
+
     void (*func)() = (void*)&orig_send_and_receive_with_auth_id;
 
-    for (uint32_t i = 0; i < 16; ++i)
+    uint32_t maxAttempts = 16;
+
+    // get time
+    if (a1[3] == 0x3002)
+        maxAttempts = 1;
+
+    for (uint32_t i = 0; i < maxAttempts; ++i)
     {
         func(a1, a2);
 
         if (a1[6] != 0xf)
             break;
+
+#ifdef DEBUG
+        DPRINTF("FAILED: %u\n", i);
+        for (uint32_t i = 0; i < 24; ++i)
+            DPRINTF("a1[%u] = 0x%x\n", i, a1[i]);
+#endif
     }
 
-    mutex_unlock(my_send_and_receive_with_auth_id_mutex);
+#ifdef DEBUG
+    if (a1[6] == 0xf)
+    {
+        DPRINTF("Attempt exhausted!!\n");
+        //sm_ring_buzzer(DOUBLE_BEEP);
+    }
+#endif
+
+    // get time
+    if (a1[3] == 0x3002)
+    {
+        if (a1[6] == 0x0)
+        {
+            qcfw_last_success_get_time_value = a1[17];
+            DPRINTF("Updating qcfw_last_success_get_time_value to 0x%x\n", qcfw_last_success_get_time_value);
+        }
+
+        if (a1[6] == 0xf)
+        {
+            a1[17] = qcfw_last_success_get_time_value;
+            a1[6] = 0x0;
+            DPRINTF("Spoofing get_time_value to 0x%x\n", a1[17]);
+        }
+    }
+
     return 0;
 }
 
@@ -263,7 +352,6 @@ void qcfw_init()
         sm_ring_buzzer(TRIPLE_BEEP);
     }
 
-    mutex_create(&my_send_and_receive_with_auth_id_mutex, SYNC_PRIORITY, SYNC_RECURSIVE);
     hook_function(send_and_receive_with_auth_id_symbol, my_send_and_receive_with_auth_id, &orig_send_and_receive_with_auth_id);
 
     // ecdsa
