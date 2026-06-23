@@ -242,6 +242,14 @@ LV2_HOOKED_FUNCTION_POSTCALL_2(void, open_path_hook, (char *path0, int mode))
 	if(strstr(path0, "ntfs[PS3ISO]"))
 		strcpy(ntfs_iso_path, path0);
 
+#if defined(FIRMWARE_DEX)
+	if (strstr(path0, ":\\") || strstr(path0, "/app_home/") || strstr(path0, "~/")) // qcfw tm fix 0x80010006
+	{
+		avoid_recursive_calls = 0;
+		return;
+	}
+#endif
+
 	// Let's now block homebrews if the "allow" flag is false
 	if(!block_homebrew(path0))
 	{
